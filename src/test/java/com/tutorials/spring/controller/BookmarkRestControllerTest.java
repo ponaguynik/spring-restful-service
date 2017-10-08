@@ -9,15 +9,16 @@ import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,6 +81,7 @@ public class BookmarkRestControllerTest {
 
     @After
     public void tearDown() {
+        bookmarkDao.removeByAccountId(account.getId());
         bookmarkDao.delete(bookmarks);
         accountDao.delete(account);
     }
@@ -118,6 +120,21 @@ public class BookmarkRestControllerTest {
     public void bookmarkNotFound() throws Exception {
         mockMvc.perform(get(String.format("/%s/bookmarks/-1", username)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void addBookmark() throws Exception {
+        String bookmarkJson = json(new Bookmark(account, "http://test.com", "Test bookmark"));
+        mockMvc.perform(post(String.format("/%s/bookmarks", username))
+                        .contentType(contentType)
+                        .content(bookmarkJson))
+                .andExpect(status().isCreated());
+    }
+
+    private String json(Object o) throws IOException {
+        MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
+        this.messageConverter.write(o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
+        return mockHttpOutputMessage.getBodyAsString();
     }
 
 }

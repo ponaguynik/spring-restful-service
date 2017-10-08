@@ -4,13 +4,14 @@ import com.tutorials.spring.dao.AccountDao;
 import com.tutorials.spring.dao.BookmarkDao;
 import com.tutorials.spring.exception.BookmarkNotFoundException;
 import com.tutorials.spring.exception.UserNotFoundException;
+import com.tutorials.spring.model.Account;
 import com.tutorials.spring.model.Bookmark;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.Collection;
 
 @RequestMapping("/{username}/bookmarks")
@@ -39,6 +40,20 @@ public class BookmarkRestController {
         } else {
             throw new BookmarkNotFoundException(String.valueOf(id));
         }
+    }
+
+    @RequestMapping(method = RequestMethod.POST)
+    public ResponseEntity<?> addBookmark(@PathVariable String username, @RequestBody Bookmark bookmark) {
+        validateUser(username);
+        return accountDao.findByUsername(username)
+                .map(account -> {
+                    Bookmark result = bookmarkDao.save(new Bookmark(account, bookmark.getUrl(), bookmark.getDescription()));
+                    URI location = ServletUriComponentsBuilder
+                            .fromCurrentRequest().path("/{id}")
+                            .buildAndExpand(result.getId()).toUri();
+                    return ResponseEntity.created(location).build();
+                })
+                .orElse(ResponseEntity.noContent().build());
     }
 
     private void validateUser(String username) throws UserNotFoundException {
