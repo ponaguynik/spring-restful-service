@@ -61,4 +61,24 @@ public class Bookmark {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Bookmark bookmark = (Bookmark) o;
+
+        if (id != null ? !id.equals(bookmark.id) : bookmark.id != null) return false;
+        if (url != null ? !url.equals(bookmark.url) : bookmark.url != null) return false;
+        return description != null ? description.equals(bookmark.description) : bookmark.description == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (url != null ? url.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        return result;
+    }
 }

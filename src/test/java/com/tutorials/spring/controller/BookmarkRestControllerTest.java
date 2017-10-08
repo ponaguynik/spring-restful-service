@@ -104,4 +104,20 @@ public class BookmarkRestControllerTest {
                 .andExpect(jsonPath("$[1].description", is("A description")));
     }
 
+    @Test
+    public void getSingleBookmark() throws Exception {
+        mockMvc.perform(get(String.format("/%s/bookmarks/%d", username, bookmarks.get(0).getId())))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(contentType))
+                .andExpect(jsonPath("$.id", is(bookmarks.get(0).getId().intValue())))
+                .andExpect(jsonPath("$.url", is("http://bookmark.com/1/" + username)))
+                .andExpect(jsonPath("$.description", is("A description")));
+    }
+
+    @Test
+    public void bookmarkNotFound() throws Exception {
+        mockMvc.perform(get(String.format("/%s/bookmarks/-1", username)))
+                .andExpect(status().isNotFound());
+    }
+
 }

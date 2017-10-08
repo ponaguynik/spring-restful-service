@@ -2,6 +2,7 @@ package com.tutorials.spring.controller;
 
 import com.tutorials.spring.dao.AccountDao;
 import com.tutorials.spring.dao.BookmarkDao;
+import com.tutorials.spring.exception.BookmarkNotFoundException;
 import com.tutorials.spring.exception.UserNotFoundException;
 import com.tutorials.spring.model.Bookmark;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,18 @@ public class BookmarkRestController {
     public Collection<Bookmark> getBookmarks(@PathVariable String username) {
         validateUser(username);
         return bookmarkDao.findByAccountUsername(username);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/{id}")
+    public Bookmark getBookmark(@PathVariable String username, @PathVariable Long id) {
+        validateUser(username);
+        Collection<Bookmark> bookmarks = bookmarkDao.findByAccountUsername(username);
+        Bookmark bookmark = bookmarkDao.findOne(id);
+        if (bookmarks.contains(bookmark)) {
+            return bookmark;
+        } else {
+            throw new BookmarkNotFoundException(String.valueOf(id));
+        }
     }
 
     private void validateUser(String username) throws UserNotFoundException {
