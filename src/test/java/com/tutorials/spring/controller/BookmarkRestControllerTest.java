@@ -117,7 +117,7 @@ public class BookmarkRestControllerTest {
     }
 
     @Test
-    public void bookmarkNotFound() throws Exception {
+    public void bookmarkGetNotFound() throws Exception {
         mockMvc.perform(get(String.format("/%s/bookmarks/-1", username)))
                 .andExpect(status().isNotFound());
     }
@@ -129,6 +129,22 @@ public class BookmarkRestControllerTest {
                         .contentType(contentType)
                         .content(bookmarkJson))
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    public void removeBookmark() throws Exception {
+        mockMvc.perform(delete(String.format("/%s/bookmarks/%d", username, bookmarks.get(0).getId())))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(contentType))
+                .andExpect(jsonPath("$.id", is(bookmarks.get(0).getId().intValue())))
+                .andExpect(jsonPath("$.url", is("http://bookmark.com/1/" + username)))
+                .andExpect(jsonPath("$.description", is("A description")));
+    }
+
+    @Test
+    public void bookmarkRemoveNotFound() throws Exception {
+        mockMvc.perform(delete(String.format("/%s/bookmarks/-1", username)))
+                .andExpect(status().isNotFound());
     }
 
     private String json(Object o) throws IOException {

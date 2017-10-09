@@ -56,6 +56,19 @@ public class BookmarkRestController {
                 .orElse(ResponseEntity.noContent().build());
     }
 
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
+    public ResponseEntity<?> removeBookmark(@PathVariable String username, @PathVariable Long id) {
+        validateUser(username);
+        Collection<Bookmark> bookmarks = bookmarkDao.findByAccountUsername(username);
+        Bookmark bookmark = bookmarkDao.findOne(id);
+        if (bookmarks.contains(bookmark)) {
+            bookmarkDao.delete(id);
+            return ResponseEntity.ok(bookmark);
+        } else {
+            throw new BookmarkNotFoundException(String.valueOf(id));
+        }
+    }
+
     private void validateUser(String username) throws UserNotFoundException {
         accountDao.findByUsername(username)
                 .orElseThrow(
